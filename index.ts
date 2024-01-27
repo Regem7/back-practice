@@ -21,27 +21,29 @@ interface ClicksData {
     clicks: number;
 }
 
-app.get('/clicks/'function (request, response){
-const data: ClicksData = {
-clicks: clicks,
-};
-response.send(data);
+app.get('/clicks/', function (request, response) {
+    const data = {
+        clicks: clicks,
+    };
+    response.send(data);
 });
-
-app.post ('/clicks/', function (request, response) {
+app.post('/clicks/', function (request, response) {
     if (typeof request.body.clicks !== 'number') {
         response.sendStatus(400);
         return;
     }
-
-    const data: ClicksData = request.body;
+    const data = request.body;
     clicks = data.clicks;
-
-    const responseData: ClicksData = {
+    const responseData = {
         clicks: clicks,
     };
     response.send(responseData);
 });
+
+app.delete('/clicks/', function (request, response) {
+    clicks = 0;
+    response.sendStatus(200);
+    });
 
 app.get('/', function (request, response) {
     response.send('я живой и супер горячий!');
