@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import { createClient } from "redis";
 
 dotenv.config();
 
@@ -13,7 +14,11 @@ app.use(
         extended: true,
     }),
 );
+
 app.use(cors());
+
+const redisClient = createClient();
+const connection = redisClient.connect();
 
 let clicks = 0;
 
@@ -21,21 +26,36 @@ interface ClicksData {
     clicks: number;
 }
 
-app.get('/clicks/', function (request, response) {
-    const data = {
-        clicks: clicks,
+app.get('/clicks/', async function (request, response) {
+    const redis = await connection;
+    const savedClicks = await redis.get('clicks');
+
+    let result = 0;
+
+    if (savedClicks !== null) {
+        result = parseInt(savedClicks);
+    }
+
+    const data: ClicksData = {
+        clicks: result,
     };
     response.send(data);
 });
-app.post('/clicks/', function (request, response) {
+
+app.post('/clicks/', async function (request, response) {
     if (typeof request.body.clicks !== 'number') {
         response.sendStatus(400);
         return;
     }
-    const data = request.body;
+
+    const data: ClicksData = request.body;
     clicks = data.clicks;
-    const responseData = {
-        clicks: clicks,
+    const redis = await connection;
+    await redis.set('clicks', data.clicks);
+
+    
+    const responseData: ClicksData = {
+        clicks: data.clicks,
     };
     response.send(responseData);
 });
