@@ -60,8 +60,14 @@ app.post('/clicks/', async function (request, response) {
     response.send(responseData);
 });
 
-app.delete('/clicks/', function (request, response) {
-    clicks = 0;
+app.delete('/clicks/', async function (request, response) {
+    const data: ClicksData = request.body;
+    const redis = await connection;
+    await redis.set('clicks', 0);
+
+    const responseData: ClicksData = {
+        clicks: data.clicks,
+    };
     response.sendStatus(200);
     });
 
